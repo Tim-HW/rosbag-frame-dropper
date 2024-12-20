@@ -1,0 +1,30 @@
+version: '3.8'
+
+networks:
+  ros:
+    driver: bridge
+
+services:
+
+  ros_bridge:
+    image: apriltagdetector:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: /bin/bash -c '. /opt/ros/humble/setup.bash && source /home/ros_ws/install/setup.bash && ros2 run apriltag_detector converter_image'
+    volumes :
+      - ./frames:/home/frames
+    networks:
+      - ros
+    depends_on:
+     - ros_bag_reader
+
+
+  ros_bag_reader:
+    image: ros:humble-ros-base  
+    container_name: ros_bag_reader
+    volumes :
+      - ./rosbag:/home/rosbag
+    command: /bin/bash -c '. /opt/ros/humble/setup.bash && ros2 bag play /home/rosbag'
+    networks:
+     - ros
